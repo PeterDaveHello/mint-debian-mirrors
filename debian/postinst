@@ -76,15 +76,13 @@ class PostInst:
                     print "Best server: %s" % best_server                    
 
                     if best_server is not None and current_server != best_server:                            
-                        choices = ','.join(map(str, choices))                                            
+                        choices = ', '.join(map(str, choices))                                            
                         db.subst('mint-debian-mirrors/choose-mirror', "choices", choices)
                         db.subst('mint-debian-mirrors/choose-mirror', "fastest_server", best_server)
                         db.subst('mint-debian-mirrors/choose-mirror', "current_server", current_server)                        
                         db.input(debconf.HIGH, 'mint-debian-mirrors/choose-mirror')                                  
                         db.go()
                         selected_server = db.get('mint-debian-mirrors/choose-mirror')                        
-                        db.stop()                        
-                        db.purge()
                         print "Selected server: %s" % selected_server
                 except Exception, detail:
                     # This is a best-effort attempt, fail graciously

@@ -4,6 +4,10 @@ Choices: ${choices}
 Description: Please select a repository mirror
  The list below show the available LMDE mirrors.
  .
- You are currently using the following mirror: ${current_server}.
- We recommend you select the fastest mirror: ${fastest_server}.
+ You are currently using the following mirror:
+ ${current_server}
+ .
+ We recommend you select the fastest mirror:
+ ${fastest_server}
+ .
 
