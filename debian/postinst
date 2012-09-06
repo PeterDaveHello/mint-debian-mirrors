@@ -8,8 +8,7 @@ import debconf
 MIRROR_LIST_FILE="/usr/share/linuxmint/mint-debian-mirrors/mirrors.list"
 
 class PostInst:
-    def main(self):        
-        sys.exit(0)
+    def main(self):                
         # this script can get called multiple times
         # so we only set up the frontend once
         # thanks to the mailman developers for this section
