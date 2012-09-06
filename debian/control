@@ -1,0 +1,12 @@
+Source: mint-debian-mirrors
+Section: admin
+Priority: optional
+Maintainer: Clement Lefebvre <clem@linuxmint.com>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.7.2
+
+Package: mint-debian-mirrors
+Architecture: all
+Depends: python-pycurl, debconf
+Description: List of LMDE mirrors
+ This package provides a list of LMDE mirrors and checks which one is the fastest for you.

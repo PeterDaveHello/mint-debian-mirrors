@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+
+import os,sys,commands
+import pycurl
+import cStringIO
+import debconf
+
+MIRROR_LIST_FILE="/usr/share/linuxmint/mint-debian-mirrors/mirrors.list"
+
+class PostInst:
+    def main(self):        
+        sys.exit(0)
+        # this script can get called multiple times
+        # so we only set up the frontend once
+        # thanks to the mailman developers for this section
+        try:
+            os.environ['DEBIAN_HAS_FRONTEND']
+        except:
+            # we need to invoke the frontend ourselves as
+            # the debconf module does not strip the python cruft off
+            os.execv(debconf._frontEndProgram, [debconf._frontEndProgram] + sys.argv)
+
+        db = debconf.Debconf()
+
+        if len(sys.argv) > 1:
+            if sys.argv[1] == 'configure':
+                try:
+                    if not os.path.exists(MIRROR_LIST_FILE):
+                        print "Can't find mirror list file"
+                        sys.exit(0)
+
+                    if os.getuid() != 0:
+                        print "Warning : script launched in user mode : can't modify anything"
+                        sys.exit(0)
+                        
+                    current_server = None
+                    current_repo = "latest"
+                    deb_lines = [line.strip() for line in open("/etc/apt/sources.list")]
+                    for deb_line in deb_lines:
+                        elements = deb_line.split(" ")
+                        if "mint" in deb_line and deb_line.endswith("nonfree") and "testing" in elements[2]:
+                            current_server = elements[1]
+                            if ("incoming" in elements[1]):
+                                current_repo = "incoming"                            
+
+                    print "Current server: %s (%s)" % (current_server, current_repo)
+                    
+                    if current_server is None: 
+                        sys.exit(0)
+
+                    mirrors = [line.strip() for line in open(MIRROR_LIST_FILE)]
+
+                    best_speed = 0
+                    best_server = None
+                    choices = []
+
+                    for mirror in mirrors:
+                        if ("http" in mirror or "ftp" in mirror):        
+                            if mirror.endswith('/'):
+                                mirror = mirror[:-1]
+                            c = pycurl.Curl()
+                            buff = cStringIO.StringIO()
+                            c.setopt(pycurl.URL, "%s/latest/dists/testing/Release" % mirror)
+                            c.setopt(pycurl.FOLLOWLOCATION, 1)        
+                            c.setopt(pycurl.WRITEFUNCTION, buff.write)
+                            c.perform()
+                            return_code = c.getinfo(pycurl.HTTP_CODE)
+                            download_speed = c.getinfo(pycurl.SPEED_DOWNLOAD)
+                            if (return_code == 200):                                
+                                choices.append("%s - %dbps" % (mirror, download_speed))
+                                if (download_speed > best_speed):
+                                    best_speed = download_speed
+                                    best_server = mirror
+                            else:
+                                print "Warning %s/latest/dists/testing/Release returns HTTP code %d" % (mirror, return_code)
+                            
+                    print "Best server: %s" % best_server                    
+
+                    if best_server is not None and current_server != best_server:                            
+                        choices = ','.join(map(str, choices))                                            
+                        db.subst('mint-debian-mirrors/choose-mirror', "choices", choices)
+                        db.subst('mint-debian-mirrors/choose-mirror', "fastest_server", best_server)
+                        db.subst('mint-debian-mirrors/choose-mirror', "current_server", current_server)                        
+                        db.input(debconf.HIGH, 'mint-debian-mirrors/choose-mirror')                                  
+                        db.go()
+                        selected_server = db.get('mint-debian-mirrors/choose-mirror')                        
+                        db.stop()                        
+                        db.purge()
+                        print "Selected server: %s" % selected_server
+                except Exception, detail:
+                    # This is a best-effort attempt, fail graciously
+                    print detail                     
+                                                    
+
+            elif sys.argv[1] == "reconfigure":
+                previous_version = sys.argv[2]
+                # we're in reconfigure mode
+
+if __name__ == "__main__":
+    PostInst().main()
+
