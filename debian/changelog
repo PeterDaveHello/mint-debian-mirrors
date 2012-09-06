@@ -1,0 +1,5 @@
+mint-debian-mirrors (1.0.0) debian; urgency=low
+
+  * Initial release.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 06 Sep 2012 15:04:51 +0100
