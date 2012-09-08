@@ -1,13 +1,13 @@
 Template: mint-debian-mirrors/choose-mirror
 Type: select
 Choices: ${choices}
-Description: Please select a repository mirror
+Description: Please select a repository mirror:
+ .
  The list below show the available LMDE mirrors.
  .
  You are currently using the following mirror:
- ${current_server}
  .
- We recommend you select the fastest mirror:
- ${fastest_server}
+     ${current_server}
  .
-
+ 
+ 

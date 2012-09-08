@@ -93,7 +93,7 @@ class PostInst:
                         formatted_choices = formatted_choices[:-2]                        
                         db.fset('mint-debian-mirrors/choose-mirror','seen','false')
                         db.subst('mint-debian-mirrors/choose-mirror', "choices", formatted_choices)
-                        db.subst('mint-debian-mirrors/choose-mirror', "fastest_server", best_server)
+                        #db.subst('mint-debian-mirrors/choose-mirror', "fastest_server", best_server)
                         db.subst('mint-debian-mirrors/choose-mirror', "current_server", current_server)                        
                         db.input(debconf.CRITICAL, 'mint-debian-mirrors/choose-mirror')                                  
                         db.go()
@@ -101,6 +101,7 @@ class PostInst:
                         print "Selected server: %s" % selected_server
                         # Substitude in sources.list
                         selected_server=selected_server.split(' ')[0]
+                        db.unregister('mint-debian-mirrors/choose-mirror')
                         os.popen("sed -i 's@%s@%s@' /etc/apt/sources.list 2>&1" % (current_server, selected_server))
                 except Exception, detail:
                     # This is a best-effort attempt, fail graciously
