@@ -64,15 +64,17 @@ class PostInst:
                             c.setopt(pycurl.FOLLOWLOCATION, 1)        
                             c.setopt(pycurl.WRITEFUNCTION, buff.write)
                             try:
-			      c.perform()
-			    except pycurl.error,error:
-			      errno, errstr = error
-			      print 'An error occurred: ', errstr
-			      sys.exit(0)
+                              c.perform()
+                            except pycurl.error,error:
+                              errno, errstr = error
+                              print 'An error occurred: ', errstr
+                              sys.exit(0)
                             return_code = c.getinfo(pycurl.HTTP_CODE)
                             download_speed = c.getinfo(pycurl.SPEED_DOWNLOAD)
-                            if (return_code == 200):                                
+                            if (return_code == 200):                         
+                                download_speed = round(download_speed/1000)
                                 choices.append([mirror,download_speed])
+                                print "Server %s - %dkbps" % (mirror, download_speed)
                                 if (download_speed > best_speed):
                                     best_speed = download_speed
                                     best_server = mirror
@@ -81,31 +83,33 @@ class PostInst:
                             
                     print "Best server: %s" % best_server                    
 
-                    if best_server is not None and current_server != best_server:    
-			# Sort choices, best first
-			print choices
-			choices = sorted(choices, key=operator.itemgetter(1), reverse=True)
-			formatted_choices=""
-			for index in range(len(choices)):
-			  formatted_choices = formatted_choices+'%s' % ' - '.join(map(str,choices[index]))+'bps, '
-			formatted_choices = formatted_choices[:-2]
+                    if best_server is not None: # and current_server != best_server:    
+                        # Sort choices, best first
+                        print choices
+                        choices = sorted(choices, key=operator.itemgetter(1), reverse=True)
+                        formatted_choices=""
+                        for index in range(len(choices)):
+                          formatted_choices = formatted_choices+'%s' % ' - '.join(map(str,choices[index]))+'kbps, '
+                        formatted_choices = formatted_choices[:-2]                        
                         db.fset('mint-debian-mirrors/choose-mirror','seen','false')
                         db.subst('mint-debian-mirrors/choose-mirror', "choices", formatted_choices)
                         db.subst('mint-debian-mirrors/choose-mirror', "fastest_server", best_server)
                         db.subst('mint-debian-mirrors/choose-mirror', "current_server", current_server)                        
-                        db.input(debconf.HIGH, 'mint-debian-mirrors/choose-mirror')                                  
+                        db.input(debconf.CRITICAL, 'mint-debian-mirrors/choose-mirror')                                  
                         db.go()
                         selected_server = db.get('mint-debian-mirrors/choose-mirror')                        
                         print "Selected server: %s" % selected_server
+                        # Substitude in sources.list
+                        selected_server=selected_server.split(' ')[0]
+                        os.popen("sed -i 's@%s@%s@' /etc/apt/sources.list 2>&1" % (current_server, selected_server))
                 except Exception, detail:
                     # This is a best-effort attempt, fail graciously
                     print detail                     
-                # Substitude in sources.list
-                selected_server=selected_server.split(' ')[0]
-		os.popen("sed -i 's@%s@%s@' /etc/apt/sources.list 2>&1" % (current_server, selected_server))
+                
             elif sys.argv[1] == "reconfigure":
                 previous_version = sys.argv[2]
                 # we're in reconfigure mode
+                
 if __name__ == "__main__":
     PostInst().main()
 
