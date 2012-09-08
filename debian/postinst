@@ -42,7 +42,15 @@ class PostInst:
                             print "Found debian.org in sources.list. Skipping mirror selection."
                             sys.exit(0)                            
                         if ("testing/updates main contrib non-free" in deb_line):
-                            current_server = elements[1]
+                            if ("http://" in elements[1] or "ftp://" in elements[1]):
+                                current_server = elements[1]
+                            elif ("http://" in elements[2] or "ftp://" in elements[2]):
+                                current_server = elements[2]
+                            elif ("http://" in elements[3] or "ftp://" in elements[3]):
+                                current_server = elements[3]
+                            else:
+                                print "Can't find current server info. Skipping."
+                                sys.exit(0)
                             current_server = current_server.replace("/security", "")
                             current_server = current_server.replace("/latest", "")
                             if ("incoming" in current_server):

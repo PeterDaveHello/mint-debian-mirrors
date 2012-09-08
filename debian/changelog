@@ -1,3 +1,9 @@
+mint-debian-mirrors (2012.09.08.2) debian; urgency=low
+
+  * Added multiarch support
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 08 Sep 2012 22:11:05 +0100
+
 mint-debian-mirrors (2012.09.08.1) debian; urgency=low
 
   * Fixed typo
