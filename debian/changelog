@@ -1,3 +1,9 @@
+mint-debian-mirrors (2012.09.08.1) debian; urgency=low
+
+  * Fixed typo
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 08 Sep 2012 16:05:51 +0100
+
 mint-debian-mirrors (2012.09.08) debian; urgency=low
 
   * Initial release

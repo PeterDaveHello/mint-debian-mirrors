@@ -41,7 +41,7 @@ class PostInst:
                         if ("debian.org" in deb_line):
                             print "Found debian.org in sources.list. Skipping mirror selection."
                             sys.exit(0)                            
-                        if ("testing/updates main contrib nonfree" in deb_line):
+                        if ("testing/updates main contrib non-free" in deb_line):
                             current_server = elements[1]
                             current_server = current_server.replace("/security", "")
                             current_server = current_server.replace("/latest", "")
@@ -112,9 +112,9 @@ class PostInst:
                             print "Updating /etc/apt/sources.list"
                             os.popen("sed -i '/%s/d' /etc/apt/sources.list 2>&1" % (current_server.replace("/", "\/")))                            
                             os.popen("echo '' >> /etc/apt/sources.list")
-                            os.popen("echo 'deb %s/%s testing main contrib nonfree' >> /etc/apt/sources.list" % (selected_server, current_repo))
-                            os.popen("echo 'deb %s/%s/security testing/updates main contrib nonfree' >> /etc/apt/sources.list" % (selected_server, current_repo))
-                            os.popen("echo 'deb %s/%s/multimedia testing main nonfree' >> /etc/apt/sources.list" % (selected_server, current_repo))
+                            os.popen("echo 'deb %s/%s testing main contrib non-free' >> /etc/apt/sources.list" % (selected_server, current_repo))
+                            os.popen("echo 'deb %s/%s/security testing/updates main contrib non-free' >> /etc/apt/sources.list" % (selected_server, current_repo))
+                            os.popen("echo 'deb %s/%s/multimedia testing main non-free' >> /etc/apt/sources.list" % (selected_server, current_repo))
                             new_sources = commands.getoutput("cat -s /etc/apt/sources.list") #clean up (remove double-blank lines)
                             f = open('/etc/apt/sources.list', 'w')
                             f.write(new_sources)
