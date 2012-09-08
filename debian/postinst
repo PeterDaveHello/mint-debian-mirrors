@@ -72,9 +72,9 @@ class PostInst:
                             return_code = c.getinfo(pycurl.HTTP_CODE)
                             download_speed = c.getinfo(pycurl.SPEED_DOWNLOAD)
                             if (return_code == 200):                         
-                                download_speed = round(download_speed/1000)
+                                download_speed = int(round(download_speed/1000))
                                 choices.append([mirror,download_speed])
-                                print "Server %s - %dkbps" % (mirror, download_speed)
+                                print "Server %s - %dKbps" % (mirror, download_speed)
                                 if (download_speed > best_speed):
                                     best_speed = download_speed
                                     best_server = mirror
@@ -84,13 +84,12 @@ class PostInst:
                     print "Best server: %s" % best_server                    
 
                     if best_server is not None: # and current_server != best_server:    
-                        # Sort choices, best first
-                        print choices
+                        # Sort choices, best first                        
                         choices = sorted(choices, key=operator.itemgetter(1), reverse=True)
                         formatted_choices=""
-                        for index in range(len(choices)):
-                          formatted_choices = formatted_choices+'%s' % ' - '.join(map(str,choices[index]))+'kbps, '
-                        formatted_choices = formatted_choices[:-2]                        
+                        for choice in choices:
+                          formatted_choices = '%s%s - %dKbps, ' % (formatted_choices, choice[0], choice[1])
+                        formatted_choices = formatted_choices[:-2]
                         db.fset('mint-debian-mirrors/choose-mirror','seen','false')
                         db.subst('mint-debian-mirrors/choose-mirror', "choices", formatted_choices)
                         #db.subst('mint-debian-mirrors/choose-mirror', "fastest_server", best_server)
@@ -98,9 +97,9 @@ class PostInst:
                         db.input(debconf.CRITICAL, 'mint-debian-mirrors/choose-mirror')                                  
                         db.go()
                         selected_server = db.get('mint-debian-mirrors/choose-mirror')                        
-                        print "Selected server: %s" % selected_server
-                        # Substitude in sources.list
                         selected_server=selected_server.split(' ')[0]
+                        print "Selected server: %s" % selected_server
+                        # Substitude in sources.list                        
                         db.unregister('mint-debian-mirrors/choose-mirror')
                         os.popen("sed -i 's@%s@%s@' /etc/apt/sources.list 2>&1" % (current_server, selected_server))
                 except Exception, detail:
