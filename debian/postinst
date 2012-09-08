@@ -38,10 +38,16 @@ class PostInst:
                     deb_lines = [line.strip() for line in open("/etc/apt/sources.list")]
                     for deb_line in deb_lines:
                         elements = deb_line.split(" ")
-                        if (("debian" in deb_line) or ("mint" in deb_line)) and deb_line.endswith("nonfree") and "testing" in elements[2]:
-                            current_server = elements[1][:elements[1].find("/latest")]
-                            if ("incoming" in elements[1]):
-                                current_repo = "incoming"                            
+                        if ("debian.org" in deb_line):
+                            print "Found debian.org in sources.list. Skipping mirror selection."
+                            sys.exit(0)                            
+                        if ("testing/updates main contrib nonfree" in deb_line):
+                            current_server = elements[1]
+                            current_server = current_server.replace("/security", "")
+                            current_server = current_server.replace("/latest", "")
+                            if ("incoming" in current_server):
+                                current_repo = "incoming"
+                                current_server = current_server.replace("/incoming", "")                            
 
                     print "Current server: %s (%s)" % (current_server, current_repo)
                     
@@ -91,8 +97,7 @@ class PostInst:
                           formatted_choices = '%s%s - %dKbps, ' % (formatted_choices, choice[0], choice[1])
                         formatted_choices = formatted_choices[:-2]
                         db.fset('mint-debian-mirrors/choose-mirror','seen','false')
-                        db.subst('mint-debian-mirrors/choose-mirror', "choices", formatted_choices)
-                        #db.subst('mint-debian-mirrors/choose-mirror', "fastest_server", best_server)
+                        db.subst('mint-debian-mirrors/choose-mirror', "choices", formatted_choices)                        
                         db.subst('mint-debian-mirrors/choose-mirror', "current_server", current_server)                        
                         db.input(debconf.CRITICAL, 'mint-debian-mirrors/choose-mirror')                                  
                         db.go()
@@ -101,7 +106,20 @@ class PostInst:
                         print "Selected server: %s" % selected_server
                         # Substitude in sources.list                        
                         db.unregister('mint-debian-mirrors/choose-mirror')
-                        os.popen("sed -i 's@%s@%s@' /etc/apt/sources.list 2>&1" % (current_server, selected_server))
+                        if (selected_server is not None and selected_server != ""):
+                            print "Saving old /etc/apt/sources.list in /etc/apt/sources.list.bk"
+                            os.system("cp /etc/apt/sources.list /etc/apt/sources.list.bk")
+                            print "Updating /etc/apt/sources.list"
+                            os.popen("sed -i '/%s/d' /etc/apt/sources.list 2>&1" % (current_server.replace("/", "\/")))                            
+                            os.popen("echo '' >> /etc/apt/sources.list")
+                            os.popen("echo 'deb %s/%s testing main contrib nonfree' >> /etc/apt/sources.list" % (selected_server, current_repo))
+                            os.popen("echo 'deb %s/%s/security testing/updates main contrib nonfree' >> /etc/apt/sources.list" % (selected_server, current_repo))
+                            os.popen("echo 'deb %s/%s/multimedia testing main nonfree' >> /etc/apt/sources.list" % (selected_server, current_repo))
+                            new_sources = commands.getoutput("cat -s /etc/apt/sources.list") #clean up (remove double-blank lines)
+                            f = open('/etc/apt/sources.list', 'w')
+                            f.write(new_sources)
+                            f.close()
+
                 except Exception, detail:
                     # This is a best-effort attempt, fail graciously
                     print detail                     
