@@ -1,3 +1,10 @@
+mint-debian-mirrors (2012.09.10) debian; urgency=low
+
+  * Added comment support
+  * Improved mirror substitution
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 10 Sep 2012 11:00:31 +0100
+
 mint-debian-mirrors (2012.09.08.2) debian; urgency=low
 
   * Added multiarch support
