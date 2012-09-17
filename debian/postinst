@@ -84,7 +84,7 @@ class PostInst:
                             except pycurl.error,error:
                               errno, errstr = error
                               print 'An error occurred: ', errstr
-                              sys.exit(0)
+                              continue
                             return_code = c.getinfo(pycurl.HTTP_CODE)
                             download_speed = c.getinfo(pycurl.SPEED_DOWNLOAD)
                             if (return_code == 200):                         

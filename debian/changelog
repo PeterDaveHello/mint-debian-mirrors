@@ -1,3 +1,9 @@
+mint-debian-mirrors (2012.09.17) debian; urgency=low
+
+  * Improved error handling
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 17 Sep 2012 17:30:26 +0100
+
 mint-debian-mirrors (2012.09.10) debian; urgency=low
 
   * Added comment support
