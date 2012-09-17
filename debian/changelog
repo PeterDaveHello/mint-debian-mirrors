@@ -1,4 +1,4 @@
-mint-debian-mirrors (2012.09.17) debian; urgency=low
+mint-debian-mirrors (2012.09.17.1) debian; urgency=low
 
   * Improved error handling
 

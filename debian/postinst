@@ -77,6 +77,8 @@ class PostInst:
                             c = pycurl.Curl()
                             buff = cStringIO.StringIO()
                             c.setopt(pycurl.URL, "%s/latest/dists/testing/Release" % mirror)
+                            c.setopt(pycurl.CONNECTTIMEOUT, 10)
+                            c.setopt(pycurl.TIMEOUT, 10)
                             c.setopt(pycurl.FOLLOWLOCATION, 1)        
                             c.setopt(pycurl.WRITEFUNCTION, buff.write)
                             try:
