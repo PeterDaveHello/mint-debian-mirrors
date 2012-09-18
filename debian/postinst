@@ -42,7 +42,7 @@ class PostInst:
                         if deb_line.lstrip().startswith("#"):                            
                             continue
                         elements = deb_line.split(" ")
-                        if ("debian.org" in deb_line):
+                        if ("debian.org" in deb_line or "debian.net" in deb_line):
                             print "Found debian.org in sources.list. Skipping mirror selection."
                             sys.exit(0)                            
                         if ("testing/updates main contrib non-free" in deb_line):                                                        
