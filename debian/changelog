@@ -1,3 +1,10 @@
+mint-debian-mirrors (2012.09.18) debian; urgency=low
+
+  * Fixed missing / character bug
+  * Ignore invisible special characters
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 18 Sep 2012 10:25:06 +0100
+
 mint-debian-mirrors (2012.09.17.1) debian; urgency=low
 
   * Improved error handling

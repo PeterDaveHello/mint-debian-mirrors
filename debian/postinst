@@ -5,6 +5,7 @@ import pycurl
 import cStringIO
 import debconf
 import operator
+import re
 
 MIRROR_LIST_FILE="/usr/share/linuxmint/mint-debian-mirrors/mirrors.list"
 
@@ -36,14 +37,15 @@ class PostInst:
                     current_server = None
                     current_repo = "latest"
                     deb_lines = [line.strip() for line in open("/etc/apt/sources.list")]                                    
-                    for deb_line in deb_lines:                        
+                    for deb_line in deb_lines:      
+                        deb_line = str(unicode(deb_line, 'ascii', 'ignore'))
                         if deb_line.lstrip().startswith("#"):                            
                             continue
                         elements = deb_line.split(" ")
                         if ("debian.org" in deb_line):
                             print "Found debian.org in sources.list. Skipping mirror selection."
                             sys.exit(0)                            
-                        if ("testing/updates main contrib non-free" in deb_line):
+                        if ("testing/updates main contrib non-free" in deb_line):                                                        
                             if ("http://" in elements[1] or "ftp://" in elements[1]):
                                 current_server = elements[1]
                             elif ("http://" in elements[2] or "ftp://" in elements[2]):
@@ -57,12 +59,18 @@ class PostInst:
                             current_server = current_server.replace("/latest", "")
                             if ("incoming" in current_server):
                                 current_repo = "incoming"
-                                current_server = current_server.replace("/incoming", "")                            
-
-                    print "Current server: %s (%s)" % (current_server, current_repo)
-                    
-                    if current_server is None: 
-                        sys.exit(0)
+                                current_server = current_server.replace("/incoming", "")
+                                        
+                    if current_server is None:
+                        print "Current server not found, exiting"
+                        sys.exit(0)                        
+                    else:
+                        current_server = current_server.strip()   
+                        current_server = current_server.replace('\t', '')                   
+                        current_server = current_server.replace('\n', '')                                                                     
+                        if current_server.endswith('/'):
+                            current_server = current_server[:-1]
+                        print "Current server: '%s' (%s)" % (current_server, current_repo)
 
                     mirrors = [line.strip() for line in open(MIRROR_LIST_FILE)]
 
@@ -71,6 +79,7 @@ class PostInst:
                     choices = []
 
                     for mirror in mirrors:
+                        mirror = str(unicode(mirror, 'ascii', 'ignore'))
                         if ("http" in mirror or "ftp" in mirror):        
                             if mirror.endswith('/'):
                                 mirror = mirror[:-1]
@@ -124,17 +133,18 @@ class PostInst:
                             print "Updating /etc/apt/sources.list"
                             
                             new_deb_lines = []                                                    
-                            for deb_line in deb_lines:                        
+                            for deb_line in deb_lines:  
+                                deb_line = str(unicode(deb_line, 'ascii', 'ignore'))
                                 new_deb_line = deb_line
                                 if deb_line.lstrip().startswith("#"):
                                     new_deb_lines.append(new_deb_line)
-                                    continue
+                                    continue                                
                                 if current_server in deb_line:
                                     elements = deb_line.split(" ")
                                     if ("latest" in deb_line or "incoming" in deb_line):
                                         new_deb_line = deb_line.replace(current_server, selected_server)
                                     else:
-                                        new_deb_line = deb_line.replace(current_server, "%s/%s" % selected_server, current_repo)
+                                        new_deb_line = deb_line.replace(current_server, "%s/%s" % selected_server, current_repo)                                    
                                 new_deb_lines.append(new_deb_line)
                                                                                                                                                 
                             f = open('/etc/apt/sources.list', 'w')
