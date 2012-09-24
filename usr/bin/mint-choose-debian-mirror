@@ -1,2 +1,3 @@
 #!/bin/bash
-sudo dpkg-reconfigure mint-debian-mirrors
+#sudo dpkg-reconfigure mint-debian-mirrors
+sudo /var/lib/dpkg/info/mint-debian-mirrors.postinst configure $@
